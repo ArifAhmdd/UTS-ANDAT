@@ -1,0 +1,118 @@
+#ANDAT
+library(readr)
+options(max.print = 99999999)
+#Read Data
+setwd("D:/Doc/")
+data=read.csv("Employee Attrition.CSV",sep = ",", header = T)
+data
+
+#Check the packaging 
+nrow(data)
+ncol(data)
+str(data)
+
+#Look at the top and the bottom of your data 
+head(data)
+tail(data)
+
+#Check your “n”s 
+library(dplyr)
+head(table(data$promotion_last_5years))
+
+data1 = filter(data,promotion_last_5years == "0")%>%
+  select(satisfaction_level,average_montly_hours, promotion_last_5years, salary)
+data1[1:30,]
+data1#lihat data keseluruhan
+
+data2=filter(data,promotion_last_5years == "0"
+             &salary=="low")%>%
+  select(satisfaction_level,average_montly_hours, promotion_last_5years, salary)%>%
+  as.data.frame()
+data2[1:30,]
+data2#lihat data keseluruhan
+
+#Validate With at Least One External Data Source
+summary(data$satisfaction_level)
+quantile(data$satisfaction_level)
+
+#Make a plot (gunakan package ggplot2) 
+library(ggplot2)
+ggplot(data2, aes(x = average_montly_hours, y = satisfaction_level)) +
+  geom_boxplot(alpha = 0.6, fill = "blue") +
+  labs(
+    title = "Boxplot Average Monthly Hours",
+    x = "Hours",
+    y = "Satisfaction Level"
+  ) +
+  theme_minimal()
+
+#Try the easy solution first 
+data2$average_montly_hours=factor(ifelse(data2$average_montly_hours<190,"Rendah","Tinggi"))
+
+group_by(data2,average_montly_hours)%>%
+  summarize(mean=mean(satisfaction_level, na.rm = T),
+            median=median(satisfaction_level,na.rm = T))
+
+boxplot(data2$satisfaction_level~data2$average_montly_hours)
+
+
+#Models as Expectations 
+mean = 0.617
+sd = 0.7
+#rentang nilai
+x = seq(mean - 4 * sd, mean + 4 * sd, length = 100)
+#Fungsi distribusi normal
+y = dnorm(x, mean = mean, sd = sd)
+#Plot kurva distribusi normal
+plot(x, y, type = "l", lwd = 2, col = "blue",
+     main = "Kurva Distribusi Normal Tingkat Kepuasan Karyawan",
+     xlab = "Tingkat Kepuasan",
+     ylab = "Densitas")
+#-------------------------------------------------------------------#
+# Parameter distribusi normal
+mean = 0.617
+sd = 0.7
+
+# Rentang nilai
+x = seq(mean - 4 * sd, mean + 4 * sd, length = 100)
+
+# Fungsi distribusi normal
+y = dnorm(x, mean = mean, sd = sd)
+
+# Data sampel dari distribusi normal
+set.seed(123) # Untuk reproducibility
+data = rnorm(1000, mean = mean, sd = sd)
+
+# Plot histogram dengan overlay kurva distribusi normal
+hist(data, breaks = 30, probability = TRUE, 
+     col = "lightgray", border = "white",
+     main = "Simulasi Data Distribusi Normal",
+     xlab = "Tingkat Kepuasan",
+     ylab = "Densitas")
+
+# Tambahkan kurva distribusi normal
+lines(x, y, lwd = 2, col = "blue")
+
+#-------------------------------------------------------------------#
+#Comparing Model Expectations to Reality
+# Buat histogram dengan skala densitas
+hist(data2$satisfaction_level, 
+     main = "Histogram Satisfaction Level", 
+     xlab = "Satisfaction Level", 
+     ylab = "Density", 
+     col = "lightblue", 
+     border = "black", 
+     prob = TRUE)
+
+# Hitung parameter distribusi normal
+mean_val = mean(data2$satisfaction_level)
+sd_val = sd(data2$satisfaction_level)
+
+# Buat rentang nilai x untuk kurva
+x = seq(min(data2$satisfaction_level), max(data2$satisfaction_level), length = 100)
+
+# Hitung densitas normal
+y = dnorm(x, mean = mean_val, sd = sd_val)
+
+# Tambahkan kurva distribusi normal ke histogram
+lines(x, y, col = "blue", lwd = 2)
